@@ -1,0 +1,30 @@
+{
+  "name": "sf4yt-gapi-client",
+  "version": "0.0.0",
+  "description": "Google data API client for the Subscription Feed for YouTube",
+  "main": "es2015/Client.js",
+  "scripts": {
+    "test": "./node_modules/karma/bin/karma start test/karma.conf.js --single-run --browsers Firefox"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jurca/sf4yt-gapi-client.git"
+  },
+  "keywords": [
+    "google",
+    "api",
+    "youtube",
+    "es2015",
+    "es6"
+  ],
+  "author": "Martin Jurča <mjurca@centrum.cz>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jurca/sf4yt-gapi-client/issues"
+  },
+  "browserify": {
+    "transform": [
+      "babelify"
+    ]
+  }
+}
