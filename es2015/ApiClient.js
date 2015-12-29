@@ -41,7 +41,7 @@ class ApiClient {
    * @param {string} service The service to access, for example "youtube".
    * @param {number} version The version of the REST API to access, for example
    *        3.
-   * @param {function(): Promise<string>} tokenProvider Callback that returns a
+   * @param {AbstractOAuthTokenGenerator} tokenProvider Callback that returns a
    *        promise that will resolve to the OAuth2.0 token to use.
    * @param {number=} loadTimeout The REST API request timeout in milliseconds,
    *        defaults to 15 seconds.
@@ -124,7 +124,7 @@ class ApiClient {
    *         body parsed as JSON.
    */
   [PRIVATE.sendRequest](method, path, data) {
-    return this[PRIVATE.tokenProvider]().then((token) => {
+    return this[PRIVATE.tokenProvider].generate().then((token) => {
       let xhr = new XMLHttpRequest()
       let url = this[PRIVATE.baseUrl] + path
       if (method === "GET") {
