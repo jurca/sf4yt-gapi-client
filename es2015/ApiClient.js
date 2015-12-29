@@ -34,7 +34,7 @@ const PRIVATE = Object.freeze({
 /**
  * Google REST API client.
  */
-class ApiClient {
+export default class ApiClient {
   /**
    * Initializes the Google REST API client.
    *
