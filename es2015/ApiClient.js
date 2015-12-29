@@ -41,16 +41,31 @@ class ApiClient {
    * @param {string} service The service to access, for example "youtube".
    * @param {number} version The version of the REST API to access, for example
    *        3.
-   * @param {AbstractOAuthTokenGenerator} tokenProvider Callback that returns a
-   *        promise that will resolve to the OAuth2.0 token to use.
+   * @param {AbstractOAuthTokenGenerator} tokenProvider Generator of OAuth2.0
+   *        tokens to use.
    * @param {number=} loadTimeout The REST API request timeout in milliseconds,
    *        defaults to 15 seconds.
    */
   constructor(service, version, tokenProvider, loadTimeout = 15000) {
+    /**
+     * The base URL of the service within the Google REST API to access.
+     *
+     * @type {string}
+     */
     this[PRIVATE.baseUrl] = `${API_BASE}${service}/v${version}/`
 
+    /**
+     * Generator of OAuth2.0 tokens to use.
+     *
+     * @type {AbstractOAuthTokenGenerator}
+     */
     this[PRIVATE.tokenProvider] = tokenProvider
 
+    /**
+     * The REST API request timeout in milliseconds, defaults to 15 seconds.
+     *
+     * @type {number}
+     */
     this[PRIVATE.loadTimeout] = loadTimeout
 
     Object.freeze(this)
