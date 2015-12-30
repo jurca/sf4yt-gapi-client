@@ -160,12 +160,14 @@ export default class ApiClient {
 
         xhr.addEventListener("abort", () => {
           let rejectionError = new Error("The request has been aborted")
+          rejectionError.name = "HttpAbortError"
           rejectionError.xhr = xhr
           reject(rejectionError)
         })
 
         xhr.addEventListener("error", (event) => {
           let rejectionError = new Error("A network error has occurred")
+          rejectionError.name = "HttpError"
           rejectionError.xhr = xhr
           rejectionError.errorEvent = event
           reject(rejectionError)
@@ -174,6 +176,7 @@ export default class ApiClient {
         xhr.addEventListener("timeout", () => {
           let rejectionError = new Error("The request has timed out, the " +
               `timeout is set to ${this[PRIVATE.loadTimeout]} ms`)
+          rejectionError.name = "HttpTimeoutError"
           rejectionError.xhr = xhr
           reject(rejectionError)
         })
@@ -211,6 +214,7 @@ export default class ApiClient {
       resolve(JSON.parse(response))
     } catch (parseError) {
       let rejectionError = new Error(`Cannot parse response body: ${response}`)
+      rejectionError.name = "HttpBodyParseError"
       rejectionError.xhr = xhr
       rejectionError.parseError = parseError
       reject(rejectionError)
