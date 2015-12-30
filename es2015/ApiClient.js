@@ -15,7 +15,7 @@ const API_BASE = "https://www.googleapis.com/"
 const QUERY_PARAMETERS_SEPARATOR = "&"
 
 /**
- * Private field symbols.
+ * Private field and method symbols.
  *
  * @type {Object<string, symbol>}
  */
