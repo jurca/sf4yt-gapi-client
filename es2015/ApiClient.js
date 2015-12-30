@@ -27,6 +27,7 @@ const PRIVATE = Object.freeze({
 
   // methods
   encodeQueryData: Symbol("encodeQueryData"),
+  prepareAndSendRequest: Symbol("prepareAndSendRequest"),
   sendRequest: Symbol("sendRequest"),
   processRequest: Symbol("processRequest")
 })
@@ -83,7 +84,7 @@ export default class ApiClient {
    *         parsed as JSON.
    */
   list(path, parameters) {
-    return this[PRIVATE.sendRequest]("GET", path, parameters)
+    return this[PRIVATE.prepareAndSendRequest]("GET", path, parameters)
   }
 
   /**
@@ -96,7 +97,7 @@ export default class ApiClient {
    *         parsed as JSON.
    */
   insert(path, data) {
-    return this[PRIVATE.sendRequest]("POST", path, data)
+    return this[PRIVATE.prepareAndSendRequest]("POST", path, data)
   }
 
   /**
@@ -109,7 +110,7 @@ export default class ApiClient {
    *         body parsed as JSON.
    */
   update(path, data) {
-    return this[PRIVATE.sendRequest]("PUT", path, data)
+    return this[PRIVATE.prepareAndSendRequest]("PUT", path, data)
   }
 
   /**
@@ -122,7 +123,7 @@ export default class ApiClient {
    *         body parsed as JSON.
    */
   delete(path, parameters) {
-    return this[PRIVATE.sendRequest]("DELETE", path, parameters)
+    return this[PRIVATE.prepareAndSendRequest]("DELETE", path, parameters)
   }
 
   /**
@@ -138,7 +139,7 @@ export default class ApiClient {
    * @return {Promise<Object>} A promise that will resolve to the response
    *         body parsed as JSON.
    */
-  [PRIVATE.sendRequest](method, path, data) {
+  [PRIVATE.prepareAndSendRequest](method, path, data) {
     return this[PRIVATE.tokenProvider].generate().then((token) => {
       let xhr = new XMLHttpRequest()
       let url = this[PRIVATE.baseUrl] + path
@@ -153,40 +154,54 @@ export default class ApiClient {
         xhr.setRequestHeader("Content-Type", "application/json")
       }
 
-      return new Promise((resolve, reject) => {
-        xhr.addEventListener("load", () => {
-          this[PRIVATE.processRequest](xhr, resolve, reject)
-        })
+      return this[PRIVATE.sendRequest](xhr, method !== "GET" ? data : null)
+    })
+  }
 
-        xhr.addEventListener("abort", () => {
-          let rejectionError = new Error("The request has been aborted")
-          rejectionError.name = "HttpAbortError"
-          rejectionError.xhr = xhr
-          reject(rejectionError)
-        })
-
-        xhr.addEventListener("error", (event) => {
-          let rejectionError = new Error("A network error has occurred")
-          rejectionError.name = "HttpError"
-          rejectionError.xhr = xhr
-          rejectionError.errorEvent = event
-          reject(rejectionError)
-        })
-
-        xhr.addEventListener("timeout", () => {
-          let rejectionError = new Error("The request has timed out, the " +
-              `timeout is set to ${this[PRIVATE.loadTimeout]} ms`)
-          rejectionError.name = "HttpTimeoutError"
-          rejectionError.xhr = xhr
-          reject(rejectionError)
-        })
-
-        if (method !== "GET") {
-          xhr.send(JSON.stringify(data))
-        } else {
-          xhr.send()
-        }
+  /**
+   * Sends the provided request and data to the server. The method will handle
+   * the response and errors within the returned promise.
+   *
+   * @param {XMLHttpRequest} xhr The semi-prepared request to send.
+   * @param {?Object<string, *>} data The data to send to the server, they will
+   *        be JSON-encoded and sent as the request body.
+   * @return {Promise<Object>} A promise that will resolve to the response
+   *         body parsed as JSON.
+   */
+  [PRIVATE.sendRequest](xhr, data) {
+    return new Promise((resolve, reject) => {
+      xhr.addEventListener("load", () => {
+        this[PRIVATE.processRequest](xhr, resolve, reject)
       })
+
+      xhr.addEventListener("abort", () => {
+        let rejectionError = new Error("The request has been aborted")
+        rejectionError.name = "HttpAbortError"
+        rejectionError.xhr = xhr
+        reject(rejectionError)
+      })
+
+      xhr.addEventListener("error", (event) => {
+        let rejectionError = new Error("A network error has occurred")
+        rejectionError.name = "HttpError"
+        rejectionError.xhr = xhr
+        rejectionError.errorEvent = event
+        reject(rejectionError)
+      })
+
+      xhr.addEventListener("timeout", () => {
+        let rejectionError = new Error("The request has timed out, the " +
+            `timeout is set to ${this[PRIVATE.loadTimeout]} ms`)
+        rejectionError.name = "HttpTimeoutError"
+        rejectionError.xhr = xhr
+        reject(rejectionError)
+      })
+
+      if (data) {
+        xhr.send(JSON.stringify(data))
+      } else {
+        xhr.send()
+      }
     })
   }
 
@@ -203,7 +218,8 @@ export default class ApiClient {
   [PRIVATE.processRequest](xhr, resolve, reject) {
     if (xhr.status !== 200) {
       let rejectionError = new Error("The Google API rejected the " +
-        `request with ${xhr.status} (${xhr.statusText}) code`)
+          `request with ${xhr.status} (${xhr.statusText}) code`)
+      rejectionError.name = "GoogleApiError"
       rejectionError.xhr = xhr
       reject(rejectionError)
       return
