@@ -22,6 +22,7 @@ const QUERY_PARAMETERS_SEPARATOR = "&"
 const PRIVATE = Object.freeze({
   // fields
   baseUrl: Symbol("baseUrl"),
+  apiKey: Symbol("apiKey"),
   tokenProvider: Symbol("tokenProvider"),
   loadTimeout: Symbol("loadTimeout"),
 
@@ -42,18 +43,28 @@ export default class ApiClient {
    * @param {string} service The service to access, for example "youtube".
    * @param {number} version The version of the REST API to access, for example
    *        3.
+   * @param {string} apiKey The REST API key to use when not using resources
+   *        requiring authorization.
    * @param {AbstractOAuthTokenGenerator} tokenProvider Generator of OAuth2.0
    *        tokens to use.
    * @param {number=} loadTimeout The REST API request timeout in milliseconds,
    *        defaults to 15 seconds.
    */
-  constructor(service, version, tokenProvider, loadTimeout = 15000) {
+  constructor(service, version, apiKey, tokenProvider, loadTimeout = 15000) {
     /**
      * The base URL of the service within the Google REST API to access.
      *
      * @type {string}
      */
     this[PRIVATE.baseUrl] = `${API_BASE}${service}/v${version}/`
+
+    /**
+     * The REST API key to use when not using resources requiring
+     * authorization.
+     *
+     * @type {string}
+     */
+    this[PRIVATE.apiKey] = apiKey
 
     /**
      * Generator of OAuth2.0 tokens to use.
@@ -80,11 +91,19 @@ export default class ApiClient {
    *        entity to query.
    * @param {Object<string, ?(boolean|number|string)>} parameters Parameters
    *        restricting the result to return.
+   * @param {boolean=} authorized Flag signalling whether the request should be
+   *        sent as authorized by user (requires OAuth2 token) or not. Some
+   *        REST resources will require authorization.
    * @return {Promise<Object>} A promise that will resolve to the response body
    *         parsed as JSON.
    */
-  list(path, parameters) {
-    return this[PRIVATE.prepareAndSendRequest]("GET", path, parameters)
+  list(path, parameters, authorized = false) {
+    return this[PRIVATE.prepareAndSendRequest](
+      "GET",
+      path,
+      parameters,
+      authorized
+    )
   }
 
   /**
@@ -93,11 +112,14 @@ export default class ApiClient {
    * @param {string} path The path within the REST API denoting the location
    *        where the entity should be created.
    * @param {Object<string, *>} data The data representing the entity.
+   * @param {boolean=} authorized Flag signalling whether the request should be
+   *        sent as authorized by user (requires OAuth2 token) or not. Some
+   *        REST resources will require authorization.
    * @return {Promise<Object>} A promise that will resolve to the response body
    *         parsed as JSON.
    */
-  insert(path, data) {
-    return this[PRIVATE.prepareAndSendRequest]("POST", path, data)
+  insert(path, data, authorized = false) {
+    return this[PRIVATE.prepareAndSendRequest]("POST", path, data, authorized)
   }
 
   /**
@@ -106,11 +128,14 @@ export default class ApiClient {
    * @param {string} path The path within the REST API denoting the entity.
    * @param {Object<string, *>} data Data representing the updated the entity
    *        and related metadata.
+   * @param {boolean=} authorized Flag signalling whether the request should be
+   *        sent as authorized by user (requires OAuth2 token) or not. Some
+   *        REST resources will require authorization.
    * @return {Promise<Object>} A promise that will resolve to the response
    *         body parsed as JSON.
    */
-  update(path, data) {
-    return this[PRIVATE.prepareAndSendRequest]("PUT", path, data)
+  update(path, data, authorized = false) {
+    return this[PRIVATE.prepareAndSendRequest]("PUT", path, data, authorized)
   }
 
   /**
@@ -119,11 +144,19 @@ export default class ApiClient {
    * @param {string} path The path within the REST API denoting the entity.
    * @param {Object<string, *>} parameters The operations parameters to send to
    *        the server. There will be send as JSON-encoded request body.
+   * @param {boolean=} authorized Flag signalling whether the request should be
+   *        sent as authorized by user (requires OAuth2 token) or not. Some
+   *        REST resources will require authorization.
    * @return {Promise<Object>} A promise that will resolve to the response
    *         body parsed as JSON.
    */
-  delete(path, parameters) {
-    return this[PRIVATE.prepareAndSendRequest]("DELETE", path, parameters)
+  delete(path, parameters, authorized = false) {
+    return this[PRIVATE.prepareAndSendRequest](
+      "DELETE",
+      path,
+      parameters,
+      authorized
+    )
   }
 
   /**
@@ -136,26 +169,47 @@ export default class ApiClient {
    *        be URI-encoded and sent as query string when the {@code GET} HTTP
    *        method is used, otherwise they will be JSON-encoded and sent as the
    *        request body.
+   * @param {boolean} authorized Flag signalling whether the request should be
+   *        sent as authorized by user (requires OAuth2 token) or not. Some
+   *        REST resources will require authorization.
    * @return {Promise<Object>} A promise that will resolve to the response
    *         body parsed as JSON.
    */
-  [PRIVATE.prepareAndSendRequest](method, path, data) {
-    return this[PRIVATE.tokenProvider].generate().then((token) => {
+  [PRIVATE.prepareAndSendRequest](method, path, data, authorized) {
+    if (authorized) {
+      return this[PRIVATE.tokenProvider].generate().then(startRequest)
+    } else {
+      return startRequest(null)
+    }
+
+    function startRequest(token) {
       let xhr = new XMLHttpRequest()
+
       let url = this[PRIVATE.baseUrl] + path
+      let querySeparator = url.indexOf("?") > -1 ?
+          QUERY_PARAMETERS_SEPARATOR : "?"
+
+      if (!authorized) {
+        url += querySeparator +
+            "key=" + encodeURIComponent(this[PRIVATE.apiKey])
+        querySeparator = QUERY_PARAMETERS_SEPARATOR
+      }
+
       if (method === "GET") {
-        url += "?" + this[PRIVATE.encodeQueryData](data)
+        url += querySeparator + this[PRIVATE.encodeQueryData](data)
       }
       xhr.open(method, url)
       xhr.timeout = this[PRIVATE.loadTimeout]
 
-      xhr.setRequestHeader("Authorization", `Bearer ${token}`)
+      if (authorized) {
+        xhr.setRequestHeader("Authorization", `Bearer ${token}`)
+      }
       if (method !== "GET") {
         xhr.setRequestHeader("Content-Type", "application/json")
       }
 
       return this[PRIVATE.sendRequest](xhr, method !== "GET" ? data : null)
-    })
+    }
   }
 
   /**
