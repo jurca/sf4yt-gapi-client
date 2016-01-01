@@ -1,4 +1,6 @@
 
+import moment from "moment"
+
 const PRIVATE = Object.freeze({
   apiClient: Symbol("apiClient")
 })
@@ -151,8 +153,7 @@ export default class YouTubeApiClient {
 
       let video = response.items[0]
       return {
-        // TODO: parse duration, e.g. "PT7M39S" or "P1DT36M50S"
-        duration: video.contentDetails.duration,
+        duration: moment.duration(video.contentDetails.duration).asSeconds(),
         viewCount: video.statistics.viewCount
       }
     })
