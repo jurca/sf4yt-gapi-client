@@ -208,7 +208,7 @@ export default class ApiClient {
         xhr.setRequestHeader("Content-Type", "application/json")
       }
 
-      return this[PRIVATE.sendRequest](xhr, method !== "GET" ? data : null)
+      return this[PRIVATE.sendRequest](xhr, (method !== "GET") ? data : null)
     }
   }
 
