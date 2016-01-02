@@ -100,6 +100,8 @@ export default class YouTubeApiClient {
     })
   }
 
+  // TODO: getUploadsPlaylistIds(channelIds) {}
+
   /**
    * @param {?string} playlistId
    * @return {Promise<?{id: string, title: string, description: string, videoCount: number, thumbnails: Object<string, {url: string, width: number, height: number}>}>}
@@ -124,6 +126,8 @@ export default class YouTubeApiClient {
       }
     })
   }
+
+  // TODO: getPlaylistVideoCounts(playlistIds)
 
   /**
    * @param {string} playlistId
@@ -171,6 +175,8 @@ export default class YouTubeApiClient {
       }
     })
   }
+
+  // TODO: getVideoMetaData(videoIds)
 
   /**
    * Requires authorization.
