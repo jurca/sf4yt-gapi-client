@@ -127,18 +127,26 @@ export default class YouTubeApiClient {
 
   /**
    * @param {string} playlistId
-   * @return {Promise<{title: string, description: string, publishedAt: Date, thumbnails: Object<string, {url: string, width: number, height: number}>}[]>}
+   * @return {Promise<{id: number, title: string, description: string, publishedAt: Date, thumbnails: Object<string, {url: string, width: number, height: number}>}[]>}
    */
   getPlaylistVideos(playlistId) {
-    // TODO: paging (response.nextPageToken: string=), post-processing
-    return this[PRIVATE.apiClient].list("playlistItems", {
+    return this[PRIVATE.listAll]("playlistItems", {
       part: "snippet,contentDetails",
       maxResults: 50,
       playlistId,
       fields: "pageInfo,nextPageToken,items/snippet(publishedAt,title," +
-          "description,thumbnails,resourceId/videoId)"
+      "description,thumbnails,resourceId/videoId)"
+    }).then((items) => {
+      return items.map((item) => {
+        return {
+          id: item.resourceId.videoId,
+          title: item.snippet.title,
+          description: item.snippet.description,
+          publishedAt: new Date(item.snippet.publishedAt),
+          thumbnails: item.snippet.thumbnails
+        }
+      })
     })
-    // parameters.pageToken = response.nextPageToken
   }
 
   /**
