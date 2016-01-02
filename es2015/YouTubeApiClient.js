@@ -61,14 +61,12 @@ export default class YouTubeApiClient {
   }
 
   /**
-   * Require authorization for accessing user's watch history and watch later
-   * playlist.
+   * Requires authorization.
    *
    * @param {string} accountId
-   * @param {boolean} authorized
    * @return {Promise<{id: string, title: string, videoCount: number, thumbnails: Object<string, string>}[]>}
    */
-  getSubscribedChannels(accountId, authorized) {
+  getSubscribedChannels(accountId) {
     // TODO: paging (response.nextPageToken: string=), post-processing
     return this[PRIVATE.apiClient].list("subscriptions", {
       part: "snippet,contentDetails",
@@ -77,7 +75,7 @@ export default class YouTubeApiClient {
       fields: "pageInfo,nextPageToken," +
           "items(snippet(title,resourceId,thumbnails)," +
           "contentDetails/totalItemCount)"
-    }, authorized)
+    }, true)
     // parameters.pageToken = response.nextPageToken
   }
 
@@ -103,15 +101,19 @@ export default class YouTubeApiClient {
   // TODO: getUploadsPlaylistIds(channelIds) {}
 
   /**
+   * Require authorization for accessing user's watch history and watch later
+   * playlist.
+   *
    * @param {?string} playlistId
+   * @param {boolean=} authorized
    * @return {Promise<?{id: string, title: string, description: string, videoCount: number, thumbnails: Object<string, {url: string, width: number, height: number}>}>}
    */
-  getPlaylistInfo(playlistId) {
+  getPlaylistInfo(playlistId, authorized = false) {
     return this[PRIVATE.apiClient].list("playlists", {
       part: "snippet,contentDetails",
       id: playlistId,
       fields: "items(id,snippet(title,description,thumbnails),contentDetails)"
-    }).then((response) => {
+    }, authorized).then((response) => {
       if (!response.items.length) {
         return null
       }
@@ -130,17 +132,27 @@ export default class YouTubeApiClient {
   // TODO: getPlaylistVideoCounts(playlistIds)
 
   /**
+   * Require authorization for accessing user's watch history and watch later
+   * playlist.
+   *
    * @param {string} playlistId
+   * @param {function(Object[]): boolean} continuationPredicate A callback
+   *        executed after each call to the REST API. The callback will receive
+   *        the items fetched in the last REST API call and should return
+   *        either {@code true} if the method should fetch the next page, or
+   *        {@code false} if no additional pages need to be fetched.
+   * @param {boolean=} authorized
    * @return {Promise<{id: number, title: string, description: string, publishedAt: Date, thumbnails: Object<string, {url: string, width: number, height: number}>}[]>}
    */
-  getPlaylistVideos(playlistId) {
+  getPlaylistVideos(playlistId, continuationPredicate = () => true,
+      authorized = false) {
     return this[PRIVATE.listAll]("playlistItems", {
       part: "snippet,contentDetails",
       maxResults: 50,
       playlistId,
       fields: "pageInfo,nextPageToken,items/snippet(publishedAt,title," +
       "description,thumbnails,resourceId/videoId)"
-    }).then((items) => {
+    }, continuationPredicate, authorized).then((items) => {
       return items.map((item) => {
         return {
           id: item.resourceId.videoId,
