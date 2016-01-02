@@ -61,10 +61,17 @@ export default class YouTubeApiClient {
   }
 
   /**
-   * Requires authorization.
+   * Fetches the list of channels the current user is subscribed to. The method
+   * requires the current user to be authorized and have valid (unexpired)
+   * OAuth2 token if the playlist is the user's watch history or the watch
+   * later playlist.
    *
-   * @param {?string=} accountId
+   * @param {?string=} accountId Youtube account ID, must be the current user's
+   *        account ID, or {@code null}
    * @return {Promise<{id: string, title: string, videoCount: number, thumbnails: Object<string, string>}[]>}
+   *         A promise that will resolve into a list of objects, where each
+   *         object represents a single YouTube channel the current user or the
+   *         specified user is subscribed to.
    */
   getSubscribedChannels(accountId = null) {
     let parameters = {
@@ -98,8 +105,12 @@ export default class YouTubeApiClient {
   }
 
   /**
-   * @param {string} channelId
-   * @return {Promise<?string>}
+   * Fetches the uploaded videos playlist ID of the specified YouTube channel.
+   *
+   * @param {string} channelId Channel ID.
+   * @return {Promise<?string>} A promise that will resolve to the playlist ID
+   *         of the uploads playlist for the specified channel ID. The ID will
+   *         be {@code null} if the channel is not found.
    */
   getUploadsPlaylistId(channelId) {
     return this[PRIVATE.apiClient].list("channels", {
@@ -119,12 +130,18 @@ export default class YouTubeApiClient {
   // TODO: getUploadsPlaylistIds(channelIds) {}
 
   /**
-   * Require authorization for accessing user's watch history and watch later
-   * playlist.
+   * Fetches information about the specified playlist. The method requires the
+   * current user to be authorized and have valid (unexpired) OAuth2 token if
+   * the playlist is the user's watch history or the watch later playlist.
    *
-   * @param {?string} playlistId
-   * @param {boolean=} authorized
+   * @param {string} playlistId Playlist ID.
+   * @param {boolean=} authorized Flag signalling whether the request should be
+   *        authorized by the user. This is required for the user's watch
+   *        history and watch later playlist.
    * @return {Promise<?{id: string, title: string, description: string, videoCount: number, thumbnails: Object<string, {url: string, width: number, height: number}>}>}
+   *         A promise that will resolve to information about the specified
+   *         playlist. The playlist info will be {@code null} if the playlist
+   *         is not found.
    */
   getPlaylistInfo(playlistId, authorized = false) {
     return this[PRIVATE.apiClient].list("playlists", {
@@ -150,17 +167,23 @@ export default class YouTubeApiClient {
   // TODO: getPlaylistVideoCounts(playlistIds)
 
   /**
-   * Require authorization for accessing user's watch history and watch later
-   * playlist.
+   * Fetches the list of videos present in the specified playlist. The method
+   * requires the current user to be authorized and have valid (unexpired)
+   * OAuth2 token if the playlist is the user's watch history or the watch
+   * later playlist.
    *
-   * @param {string} playlistId
+   * @param {string} playlistId Playlist ID.
    * @param {function(Object[]): boolean} continuationPredicate A callback
    *        executed after each call to the REST API. The callback will receive
    *        the items fetched in the last REST API call and should return
    *        either {@code true} if the method should fetch the next page, or
    *        {@code false} if no additional pages need to be fetched.
-   * @param {boolean=} authorized
+   * @param {boolean=} authorized Flag signalling whether the request should be
+   *        authorized by the user. This is required for the user's watch
+   *        history and watch later playlist.
    * @return {Promise<{id: number, title: string, description: string, publishedAt: Date, thumbnails: Object<string, {url: string, width: number, height: number}>}[]>}
+   *         A promise that will resolve to array of objects, each representing
+   *         a single video.
    */
   getPlaylistVideos(playlistId, continuationPredicate = () => true,
       authorized = false) {
@@ -184,8 +207,11 @@ export default class YouTubeApiClient {
   }
 
   /**
-   * @param {string} videoId
-   * @return {Promise<{id: number, duration: number, viewCount: number}>}
+   * Fetched the duration and view count for the specified video.
+   *
+   * @param {string} videoId Video ID.
+   * @return {Promise<{id: number, duration: number, viewCount: number}>} A
+   *         promise that will resolve to the video metadata.
    */
   getVideoMetaData(videoId) {
     return this[PRIVATE.apiClient].list("videos", {
@@ -209,11 +235,14 @@ export default class YouTubeApiClient {
   // TODO: getVideoMetaData(videoIds)
 
   /**
-   * Requires authorization.
+   * Adds the specified video the the specified playlist. This method requires
+   * the current user to be authorized and have valid (unexpired) OAuth2 token.
    *
-   * @param {string} playlistId
-   * @param {string} videoId
-   * @return {Promise<undefined>}
+   * @param {string} playlistId ID of the playlist to which the video should be
+   *        added.
+   * @param {string} videoId ID of the video to add to the playlist.
+   * @return {Promise<undefined>} A promise that resolves when the item has
+   *         been added to the playlist.
    */
   addPlaylistItem(playlistId, videoId) {
     return this[PRIVATE.apiClient].insert("playlistItems?part=snippet", {
