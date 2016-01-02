@@ -22,7 +22,7 @@ export default class YouTubeApiClient {
    */
   getAccountInfo(accountId = null) {
     let parameters = {
-      part: "id,snippet,contentDetails",
+      part: "snippet,contentDetails",
       fields: "items(id,snippet/title," +
           "contentDetails/relatedPlaylists(watchHistory,watchLater))"
     }
