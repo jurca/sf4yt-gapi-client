@@ -151,13 +151,13 @@ export default class YouTubeApiClient {
 
   /**
    * @param {string} videoId
-   * @return {Promise<{duration: number, viewCount: number}>}
+   * @return {Promise<{id: number, duration: number, viewCount: number}>}
    */
   getVideoMetaData(videoId) {
     return this[PRIVATE.apiClient].list("videos", {
       part: "contentDetails,statistics",
       id: videoId,
-      fields: "items(contentDetails/duration,statistics/viewCount)"
+      fields: "items(id,contentDetails/duration,statistics/viewCount)"
     }).then((response) => {
       if (!response.items.length) {
         return null
@@ -165,6 +165,7 @@ export default class YouTubeApiClient {
 
       let video = response.items[0]
       return {
+        id: video.id,
         duration: moment.duration(video.contentDetails.duration).asSeconds(),
         viewCount: video.statistics.viewCount
       }
