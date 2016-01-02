@@ -2,7 +2,11 @@
 import moment from "moment"
 
 const PRIVATE = Object.freeze({
-  apiClient: Symbol("apiClient")
+  // fields
+  apiClient: Symbol("apiClient"),
+
+  // methods
+  listAll: Symbol("listAll")
 })
 
 export default class YouTubeApiClient {
@@ -176,5 +180,54 @@ export default class YouTubeApiClient {
         }
       }
     }, true).then(() => undefined)
+  }
+
+  /**
+   * Fetches all pages of items from the REST API that are matching the
+   * specified parameters.
+   *
+   * @param {string} path The path within the REST API denoting the resource or
+   *        entity to query.
+   * @param {Object<string, ?(boolean|number|string)>} parameters Parameters
+   *        restricting the result to return.
+   * @param {function(Object[]): boolean} continuationPredicate A callback
+   *        executed after each call to the REST API. The callback will receive
+   *        the items fetched in the last REST API call and should return
+   *        either {@code true} if the method should fetch the next page, or
+   *        {@code false} if no additional pages need to be fetched.
+   * @param {boolean=} authorized Flag signalling whether the request should be
+   *        sent as authorized by user (requires OAuth2 token) or not. Some
+   *        REST resources will require authorization.
+   * @return {Promise<Object[]>} A promise that will resolve to the items
+   *         fetched from the REST API.
+   */
+  [PRIVATE.listAll](path, parameters, continuationPredicate = () => true,
+      authorized = false) {
+    let items = []
+
+    return fetchNextPage()
+
+    function fetchNextPage(pageToken) {
+      let fetchParams = Object.assign({}, parameters)
+      if (pageToken) {
+        fetchParams.pageToken = pageToken
+      }
+
+      return this[PRIVATE.apiClient].list(
+        path,
+        fetchParams,
+        authorized
+      ).then((response) => {
+        if (response.items) {
+          items = items.concat(response.items)
+        }
+
+        if (response.nextPageToken && continuationPredicate(response.items)) {
+          return fetchNextPage(response.nextPageToken)
+        } else {
+          return items
+        }
+      })
+    }
   }
 }
