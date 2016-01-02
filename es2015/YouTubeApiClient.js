@@ -63,20 +63,38 @@ export default class YouTubeApiClient {
   /**
    * Requires authorization.
    *
-   * @param {string} accountId
+   * @param {?string=} accountId
    * @return {Promise<{id: string, title: string, videoCount: number, thumbnails: Object<string, string>}[]>}
    */
-  getSubscribedChannels(accountId) {
-    // TODO: paging (response.nextPageToken: string=), post-processing
-    return this[PRIVATE.apiClient].list("subscriptions", {
+  getSubscribedChannels(accountId = null) {
+    let parameters = {
       part: "snippet,contentDetails",
-      channelId: accountId,
       maxResults: 50,
       fields: "pageInfo,nextPageToken," +
           "items(snippet(title,resourceId,thumbnails)," +
           "contentDetails/totalItemCount)"
-    }, true)
-    // parameters.pageToken = response.nextPageToken
+    }
+    if (accountId) {
+      parameters.channelId = accountId
+    } else {
+      parameters.mine = true
+    }
+
+    return this[PRIVATE.listAll](
+      "subscriptions",
+      parameters,
+      () => true,
+      true
+    ).then((items) => {
+      return items.map((item) => {
+        return {
+          id: item.snippet.resourceId.channelId,
+          title: item.snippet.title,
+          videoCount: item.contentDetails.totalItemCount,
+          thumbnails: item.snippet.thumbnails
+        }
+      })
+    })
   }
 
   /**
@@ -151,7 +169,7 @@ export default class YouTubeApiClient {
       maxResults: 50,
       playlistId,
       fields: "pageInfo,nextPageToken,items/snippet(publishedAt,title," +
-      "description,thumbnails,resourceId/videoId)"
+          "description,thumbnails,resourceId/videoId)"
     }, continuationPredicate, authorized).then((items) => {
       return items.map((item) => {
         return {
