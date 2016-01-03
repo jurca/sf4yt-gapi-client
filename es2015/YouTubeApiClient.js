@@ -1,6 +1,11 @@
 
 import moment from "moment"
 
+/**
+ * Private field and method symbols.
+ *
+ * @type {Object<string, symbol>}
+ */
 const PRIVATE = Object.freeze({
   // fields
   apiClient: Symbol("apiClient"),
@@ -9,16 +14,38 @@ const PRIVATE = Object.freeze({
   listAll: Symbol("listAll")
 })
 
+/**
+ * High-level YouTube REST API client.
+ */
 export default class YouTubeApiClient {
+  /**
+   * Initializes the YouTube API client.
+   *
+   * @param {ApiClient} apiClient The Google REST API client to use for
+   *        accessing the YouTube-related APIs.
+   */
   constructor(apiClient) {
+    /**
+     * The Google REST API client to use for accessing the YouTube-related
+     * APIs.
+     *
+     * @type {ApiClient}
+     */
     this[PRIVATE.apiClient] = apiClient
+
+    Object.freeze(this)
   }
 
   /**
-   * accountId = null requires authorization
+   * Retrieves the information about the specified YouTube account or the
+   * account of the currently authorized user.
    *
-   * @param {?string} accountId
+   * @param {?string} accountId The ID of the YouTube account, or {@code null}
+   *        if the information should be fetched for the account of the
+   *        currently authorized user.
    * @return {Promise<?{id: string, title: string, playlistIds: {watchHistory: ?string, watchLater: ?string}}>}
+   *         A promise that will resolve into information about the YouTube
+   *         account.
    */
   getAccountInfo(accountId = null) {
     let parameters = {
