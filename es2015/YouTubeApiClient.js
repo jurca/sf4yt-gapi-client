@@ -234,11 +234,12 @@ export default class YouTubeApiClient {
   }
 
   /**
-   * Fetched the duration and view count for the specified video.
+   * Fetches the duration and view count for the specified video.
    *
    * @param {string} videoId Video ID.
-   * @return {Promise<{id: number, duration: number, viewCount: number}>} A
-   *         promise that will resolve to the video metadata.
+   * @return {Promise<?{id: number, duration: number, viewCount: number}>} A
+   *         promise that will resolve to the video metadata. The result will
+   *         be {@code null} if the video is not found.
    */
   getVideoMetaData(videoId) {
     return this[PRIVATE.apiClient].list("videos", {
@@ -259,7 +260,29 @@ export default class YouTubeApiClient {
     })
   }
 
-  // TODO: getVideoMetaData(videoIds)
+  /**
+   * Fetches the durations and view counts for the specified videos.
+   *
+   * @param {string[]} videoIds Video IDs.
+   * @return {Promise<{id: number, duration: number, viewCount: number}[]>} A
+   *         promise that will resolve to the video metadata. The resulting
+   *         array will not contain metadata of videos that were not found.
+   */
+  getVideosMetaData(videoIds) {
+    return this[PRIVATE.listAll]("videos", {
+      part: "contentDetails,statistics",
+      id: videoIds.join(","),
+      fields: "items(id,contentDetails/duration,statistics/viewCount)"
+    }).then((response) => {
+      return response.items.map((video) => {
+        return {
+          id: video.id,
+          duration: moment.duration(video.contentDetails.duration).asSeconds(),
+          viewCount: video.statistics.viewCount
+        }
+      })
+    })
+  }
 
   /**
    * Adds the specified video the the specified playlist. This method requires
