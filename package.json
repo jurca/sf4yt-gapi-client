@@ -1,8 +1,8 @@
 {
   "name": "sf4yt-gapi-client",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Google data API client for the Subscription Feed for YouTube",
-  "main": "es2015/Client.js",
+  "main": "es2015/YouTubeApiClient.js",
   "scripts": {
     "test": "./node_modules/karma/bin/karma start test/karma.conf.js --single-run --browsers Firefox"
   },
@@ -28,6 +28,6 @@
     ]
   },
   "dependencies": {
-    "moment": "^2.10.6"
+    "moment": "git+http://github.com/moment/moment.git#2.11.0"
   }
 }
