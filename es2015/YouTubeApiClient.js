@@ -154,7 +154,29 @@ export default class YouTubeApiClient {
     })
   }
 
-  // TODO: getUploadsPlaylistIds(channelIds) {}
+  /**
+   * Retrieves the uploads playlist IDs for the specified YouTube channels.
+   *
+   * @param {string} channelIds Channel IDs.
+   * @return {Promise<{id: string, uploadsPlaylistId: string}[]>} A promise
+   *         that will resolve into an array of objects matching the channel
+   *         IDs to uploads playlist IDs. The array will not contain elements
+   *         for channels that were not found.
+   */
+  getUploadsPlaylistIds(channelIds) {
+    return this[PRIVATE.listAll]("channels", {
+      part: "contentDetails",
+      id: channelIds.join(","),
+      fields: "items(id,contentDetails/relatedPlaylists/uploads)"
+    }).then((channels) => {
+      return channels.map((channel) => {
+        return {
+          id: channel.id,
+          uploadsPlaylistId: channel.contentDetails.relatedPlaylists.uploads
+        }
+      })
+    })
+  }
 
   /**
    * Fetches information about the specified playlist. The method requires the
@@ -191,7 +213,35 @@ export default class YouTubeApiClient {
     })
   }
 
-  // TODO: getPlaylistVideoCounts(playlistIds)
+  /**
+   * Retrieves the video counts for the specified playlists. The method
+   * requires the current user to be authorized and have valid (unexpired)
+   * OAuth2 token if the playlist is the user's watch history or the watch
+   * later playlist.
+   *
+   * @param {string[]} playlistIds Playlist IDs.
+   * @param {boolean=} authorized Flag signalling whether the request should be
+   *        authorized by the user. This is required for the user's watch
+   *        history and watch later playlist.
+   * @return {Promise<{id: string, videoCount: number}[]>} A promise that will
+   *         resolve to objects representing the meta information about the
+   *         specified playlists. The array will not contain items for
+   *         playlists that were not found.
+   */
+  getPlaylistVideoCounts(playlistIds, authorized = false) {
+    return this[PRIVATE.listAll]("playlists", {
+      part: "contentDetails",
+      id: playlistIds.join(","),
+      fields: "items(id,contentDetails)"
+    }, () => true, authorized).then((playlists) => {
+      return playlists.map((playlist) => {
+        return {
+          id: playlist.id,
+          videoCount: playlist.contentDetails.itemCount
+        }
+      })
+    })
+  }
 
   /**
    * Fetches the list of videos present in the specified playlist. The method
