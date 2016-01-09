@@ -1,6 +1,6 @@
 {
   "name": "sf4yt-gapi-client",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Google data API client for the Subscription Feed for YouTube",
   "private": true,
   "main": "es2015/YouTubeApiClient.js",
