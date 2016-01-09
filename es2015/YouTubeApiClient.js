@@ -286,7 +286,7 @@ export default class YouTubeApiClient {
    * @param {boolean=} authorized Flag signalling whether the request should be
    *        authorized by the user. This is required for the user's watch
    *        history and watch later playlist.
-   * @return {Promise<{id: number, title: string, description: string, publishedAt: Date, thumbnails: Object<string, {url: string, width: number, height: number}>}[]>}
+   * @return {Promise<{id: number, title: string, description: string, publishedAt: Date, channelId: string, thumbnails: Object<string, {url: string, width: number, height: number}>}[]>}
    *         A promise that will resolve to array of objects, each representing
    *         a single video.
    */
@@ -297,7 +297,7 @@ export default class YouTubeApiClient {
       maxResults: 50,
       playlistId,
       fields: "pageInfo,nextPageToken,items/snippet(publishedAt,title," +
-          "description,thumbnails,resourceId/videoId)"
+          "description,channelId,thumbnails,resourceId/videoId)"
     }, continuationPredicate, authorized).then((items) => {
       return items.map((item) => {
         return {
@@ -305,6 +305,7 @@ export default class YouTubeApiClient {
           title: item.snippet.title,
           description: item.snippet.description,
           publishedAt: new Date(item.snippet.publishedAt),
+          channelId: item.snippet.channelId,
           thumbnails: item.snippet.thumbnails
         }
       })
