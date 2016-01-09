@@ -93,6 +93,13 @@ export default class YouTubeApiClient {
    * OAuth2 token if the playlist is the user's watch history or the watch
    * later playlist.
    *
+   * The thumbnails object keys describe the thumbnail quality at the given
+   * URL. The keys, sorted from the lowest quality, to the highest, with their
+   * dimensions (at the moment of writing this) attached, are as follows:
+   *
+   * - {@code default} - 88 &times; 88 pixels
+   * - {@code high} - 240 &times; 240 pixels
+   *
    * @param {?string=} accountId Youtube account ID, must be the current user's
    *        account ID, or {@code null}
    * @return {Promise<{id: string, title: string, videoCount: number, thumbnails: Object<string, string>}[]>}
@@ -183,6 +190,18 @@ export default class YouTubeApiClient {
    * current user to be authorized and have valid (unexpired) OAuth2 token if
    * the playlist is the user's watch history or the watch later playlist.
    *
+   * The thumbnails object keys describe the thumbnail quality, and, sorted
+   * from the lowest quality to the highest, are as follows:
+   *
+   * - {@code default}
+   * - {@code medium}
+   * - {@code high}
+   * - {@code standard}
+   * - {@code maxres}
+   *
+   * Note that the thumbnails may change with every video added to the
+   * playlist.
+   *
    * @param {string} playlistId Playlist ID.
    * @param {boolean=} authorized Flag signalling whether the request should be
    *        authorized by the user. This is required for the user's watch
@@ -248,6 +267,15 @@ export default class YouTubeApiClient {
    * requires the current user to be authorized and have valid (unexpired)
    * OAuth2 token if the playlist is the user's watch history or the watch
    * later playlist.
+   *
+   * The thumbnails object keys describe the thumbnail quality, and, sorted
+   * from the lowest quality to the highest, are as follows:
+   *
+   * - {@code default}
+   * - {@code medium}
+   * - {@code high}
+   * - {@code standard}
+   * - {@code maxres}
    *
    * @param {string} playlistId Playlist ID.
    * @param {function(Object[]): boolean} continuationPredicate A callback
