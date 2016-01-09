@@ -206,7 +206,7 @@ export default class YouTubeApiClient {
    * @param {boolean=} authorized Flag signalling whether the request should be
    *        authorized by the user. This is required for the user's watch
    *        history and watch later playlist.
-   * @return {Promise<?{id: string, title: string, description: string, videoCount: number, thumbnails: Object<string, {url: string, width: number, height: number}>}>}
+   * @return {Promise<?{id: string, title: string, description: string, channelId: string, videoCount: number, thumbnails: Object<string, {url: string, width: number, height: number}>}>}
    *         A promise that will resolve to information about the specified
    *         playlist. The playlist info will be {@code null} if the playlist
    *         is not found.
@@ -215,7 +215,8 @@ export default class YouTubeApiClient {
     return this[PRIVATE.apiClient].list("playlists", {
       part: "snippet,contentDetails",
       id: playlistId,
-      fields: "items(id,snippet(title,description,thumbnails),contentDetails)"
+      fields: "items(id,snippet(title,description,channelId,thumbnails)," +
+          "contentDetails)"
     }, authorized).then((response) => {
       if (!response.items.length) {
         return null
@@ -226,6 +227,7 @@ export default class YouTubeApiClient {
         id: playlist.id,
         title: playlist.snippet.title,
         description: playlist.snippet.description,
+        channelId: playlist.snippet.channelId,
         videoCount: playlist.contentDetails.itemCount,
         thumbnails: playlist.snippet.thumbnails
       }
