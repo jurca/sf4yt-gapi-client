@@ -173,7 +173,7 @@ export default class YouTubeApiClient {
   /**
    * Retrieves the uploads playlist IDs for the specified YouTube channels.
    *
-   * @param {string} channelIds Channel IDs.
+   * @param {string[]} channelIds Channel IDs.
    * @return {Promise<{id: string, uploadsPlaylistId: string}[]>} A promise
    *         that will resolve into an array of objects matching the channel
    *         IDs to uploads playlist IDs. The array will not contain elements
