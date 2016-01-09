@@ -101,12 +101,16 @@ export default class YouTubeApiClient {
    *
    * @param {?string=} accountId Youtube account ID, must be the current user's
    *        account ID, or {@code null}.
+   * @param {?boolean=} authorized Whether or not the request should be
+   *        authorized using OAuth. Defaults to {@code null}, which means
+   *        authorized request when the {@code accountId} is {@code null}, and
+   *        unauthorized request when the {@code accountId} is provided.
    * @return {Promise<{id: string, title: string, videoCount: number, thumbnails: Object<string, string>}[]>}
    *         A promise that will resolve into a list of objects, where each
    *         object represents a single YouTube channel the current user or the
    *         specified user is subscribed to.
    */
-  getSubscribedChannels(accountId = null) {
+  getSubscribedChannels(accountId = null, authorized = null) {
     let parameters = {
       part: "snippet,contentDetails",
       maxResults: 50,
@@ -116,15 +120,21 @@ export default class YouTubeApiClient {
     }
     if (accountId) {
       parameters.channelId = accountId
+      if (authorized === null) {
+        authorized = false
+      }
     } else {
       parameters.mine = true
+      if (authorized === null) {
+        authorized = true
+      }
     }
 
     return this[PRIVATE.listAll](
       "subscriptions",
       parameters,
       () => true,
-      true
+      authorized
     ).then((items) => {
       return items.map((item) => {
         return {
