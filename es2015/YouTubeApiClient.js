@@ -90,8 +90,7 @@ export default class YouTubeApiClient {
   /**
    * Fetches the list of channels the current user is subscribed to. The method
    * requires the current user to be authorized and have valid (unexpired)
-   * OAuth2 token if the playlist is the user's watch history or the watch
-   * later playlist.
+   * OAuth2 token if the account ID is {@code null}.
    *
    * The thumbnails object keys describe the thumbnail quality at the given
    * URL. The keys, sorted from the lowest quality, to the highest, with their
@@ -101,7 +100,7 @@ export default class YouTubeApiClient {
    * - {@code high} - 240 &times; 240 pixels
    *
    * @param {?string=} accountId Youtube account ID, must be the current user's
-   *        account ID, or {@code null}
+   *        account ID, or {@code null}.
    * @return {Promise<{id: string, title: string, videoCount: number, thumbnails: Object<string, string>}[]>}
    *         A promise that will resolve into a list of objects, where each
    *         object represents a single YouTube channel the current user or the
