@@ -88,6 +88,28 @@ export default class YouTubeApiClient {
   }
 
   /**
+   * Fetches the channel ID of the specified user.
+   *
+   * @param {string} username The YouTube username.
+   * @return {Promise<?string>} A promise that will resolve to the channel ID
+   *         of the specified YouTube user, or {@code null} if the user does
+   *         not exist.
+   */
+  getUserChannelId(username) {
+    return this[PRIVATE.apiClient].list("channels", {
+      part: "id",
+      forUsername: username,
+      fields: "items/id"
+    }).then((response) => {
+      if (!response.items.length) {
+        return null
+      }
+
+      return response.items[0].id
+    })
+  }
+
+  /**
    * Fetches the list of channels the current user is subscribed to. The method
    * requires the current user to be authorized and have valid (unexpired)
    * OAuth2 token if the account ID is {@code null}.
