@@ -266,6 +266,47 @@ export default class YouTubeApiClient {
   }
 
   /**
+   * Fetches information about the specified playlists.
+   *
+   * The thumbnails object keys describe the thumbnail quality, and, sorted
+   * from the lowest quality to the highest, are as follows:
+   *
+   * - {@code default}
+   * - {@code medium}
+   * - {@code high}
+   * - {@code standard}
+   * - {@code maxres}
+   *
+   * Note that the thumbnails may change with every video added to the
+   * playlist.
+   *
+   * @param {string[]} playlistIds Playlist ID.
+   * @return {Promise<{id: string, title: string, description: string, channelId: string, videoCount: number, thumbnails: Object<string, {url: string, width: number, height: number}>}[]>}
+   *         A promise that will resolve to information about the specified
+   *         playlists. The playlists that were not found will not be present
+   *         in the resulting array.
+   */
+  getPlaylists(playlistIds) {
+    return this[PRIVATE.listAll]("playlists", {
+      part: "snippet,contentDetails",
+      id: playlistIds.join(","),
+      fields: "items(id,snippet(title,description,channelId,thumbnails)," +
+      "contentDetails)"
+    }).then((response) => {
+      return response.items.map((playlist) => {
+        return {
+          id: playlist.id,
+          title: playlist.snippet.title,
+          description: playlist.snippet.description,
+          channelId: playlist.snippet.channelId,
+          videoCount: playlist.contentDetails.itemCount,
+          thumbnails: playlist.snippet.thumbnails
+        }
+      })
+    })
+  }
+
+  /**
    * Retrieves the video counts for the specified playlists. The method
    * requires the current user to be authorized and have valid (unexpired)
    * OAuth2 token if the playlist is the user's watch history or the watch
