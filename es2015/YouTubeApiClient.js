@@ -292,8 +292,8 @@ export default class YouTubeApiClient {
       id: playlistIds.join(","),
       fields: "items(id,snippet(title,description,channelId,thumbnails)," +
       "contentDetails)"
-    }).then((response) => {
-      return response.items.map((playlist) => {
+    }).then((playlists) => {
+      return playlists.map((playlist) => {
         return {
           id: playlist.id,
           title: playlist.snippet.title,
