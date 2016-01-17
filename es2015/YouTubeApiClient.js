@@ -337,6 +337,31 @@ export default class YouTubeApiClient {
   }
 
   /**
+   * Retrieves the current playlist thumbnails of the specified playlists. The
+   * method requires the current user to be authorized and have valid
+   * (unexpired) OAuth2 token if the playlist is the user's watch history or
+   * the watch later playlist.
+   *
+   * @param {string[]} playlistIds Playlist IDs.
+   * @param {boolean=} authorized Flag signalling whether the request should be
+   *        authorized by the user. This is required for the user's watch
+   *        history and watch later playlist.
+   * @return {Promise<{id: number, thumbnails: Object<string, {url: string, width: number, height: number}>}[]>}
+   */
+  getPlaylistThumbnails(playlistIds, authorized = false) {
+    return this[PRIVATE.listAll]("playlists", {
+      part: "snippet",
+      id: playlistIds.join(","),
+      fields: "items(id,snippet/thumbnails)"
+    }, () => true, authorized).then((playlist) => {
+      return {
+        id: playlist.id,
+        thumbnails: playlist.snippet.thumbnails
+      }
+    })
+  }
+
+  /**
    * Fetches the list of videos present in the specified playlist. The method
    * requires the current user to be authorized and have valid (unexpired)
    * OAuth2 token if the playlist is the user's watch history or the watch
