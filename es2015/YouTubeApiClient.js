@@ -110,6 +110,42 @@ export default class YouTubeApiClient {
   }
 
   /**
+   * Fetches the information about the specified YouTube channel.
+   *
+   * The thumbnails object keys describe the thumbnail quality at the given
+   * URL. The keys, sorted from the lowest quality, to the highest, with their
+   * dimensions (at the moment of writing this) attached, are as follows:
+   *
+   * - {@code default} - 88 &times; 88 pixels
+   * - {@code high} - 240 &times; 240 pixels
+   *
+   * @param {string} channelId Channel ID.
+   * @return {Promise<?{id: string, title: string, thumbnails: Object<string, string>, uploadsPlaylistId: string}>}
+   *         A promise that will resolve to the channel info, or {@code null}
+   *         if the channel does not exist.
+   */
+  getChannelInfo(channelId) {
+    return this[PRIVATE.apiClient].list("channels", {
+      part: "id,snippet,contentDetails",
+      id: channelId,
+      fields: "items(id,snippet(title,thumbnails)," +
+          "contentDetails/relatedPlaylists/uploads)"
+    }).then((response) => {
+      if (!response.items.length) {
+        return null
+      }
+
+      let channel = response.items[0]
+      return {
+        id: channel.id,
+        title: channel.snippet.title,
+        thumbnails: channel.snippet.thumbnails,
+        uploadsPlaylistId: channel.contentDetails.relatedPlaylists.uploads
+      }
+    })
+  }
+
+  /**
    * Fetches the list of channels the current user is subscribed to. The method
    * requires the current user to be authorized and have valid (unexpired)
    * OAuth2 token if the account ID is {@code null}.
