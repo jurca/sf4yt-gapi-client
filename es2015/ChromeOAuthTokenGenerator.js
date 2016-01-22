@@ -23,6 +23,11 @@ export default class ChromeOAuthTokenGenerator extends AbstractTokenGenerator {
   constructor(accountId) {
     super()
 
+    /**
+     * GAIA ID of the user account for which the tokens should be retrieved.
+     *
+     * @type {string}
+     */
     this[PRIVATE.accountId] = accountId
 
     Object.freeze(this)
