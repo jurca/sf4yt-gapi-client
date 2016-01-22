@@ -21,6 +21,8 @@ export default class ChromeOAuthTokenGenerator extends AbstractTokenGenerator {
    *        should be retrieved.
    */
   constructor(accountId) {
+    super()
+
     this[PRIVATE.accountId] = accountId
 
     Object.freeze(this)
