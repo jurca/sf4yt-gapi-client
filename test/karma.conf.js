@@ -13,7 +13,6 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
-      //"node_modules/karma-babel-preprocessor/node_modules/babel-core/browser-polyfill.js",
       {pattern: "es2015/**/*.js", included: false},
       {pattern: "test/**/*Spec.js", included: false},
       "test/main.js"
@@ -36,7 +35,8 @@ module.exports = function (config) {
 
     babelPreprocessor: {
       options: {
-        presets: ["es2015"]
+        presets: ["es2015"],
+        plugins: ["transform-es2015-modules-amd"]
       }
     },
 
@@ -66,7 +66,7 @@ module.exports = function (config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ["PhantomJS"],
+    browsers: ["Firefox"],
 
 
     // Continuous Integration mode
