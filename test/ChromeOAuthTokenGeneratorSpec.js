@@ -1,5 +1,6 @@
 
 import TokenGenerator from "../es2015/ChromeOAuthTokenGenerator"
+import {promiseIt} from "./testUtils"
 
 describe("ChromeOAuthTokenGenerator", () => {
 
@@ -72,14 +73,5 @@ describe("ChromeOAuthTokenGenerator", () => {
       expect(error.message).toBe(window.chrome.runtime.lastError.message)
     })
   })
-
-  function promiseIt(behavior, test) {
-    it(behavior, (done) => {
-      test().then(done).catch((error) => {
-        fail(error)
-        done()
-      })
-    })
-  }
 
 })

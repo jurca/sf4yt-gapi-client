@@ -14,6 +14,7 @@ module.exports = function (config) {
     // list of files / patterns to load in the browser
     files: [
       {pattern: "es2015/**/*.js", included: false},
+      {pattern: "test/testUtils.js", included: false},
       {pattern: "test/**/*Spec.js", included: false},
       "test/main.js"
     ],
@@ -29,6 +30,7 @@ module.exports = function (config) {
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
       "es2015/**/*.js": ["babel"],
+      "test/testUtils.js": ["babel"],
       "test/**/*Spec.js": ["babel"]
     },
 
