@@ -428,7 +428,7 @@ export default class YouTubeApiClient {
   getPlaylistVideos(playlistId, continuationPredicate = () => true,
       authorized = false) {
     return this[PRIVATE.listAll]("playlistItems", {
-      part: "snippet,contentDetails",
+      part: "snippet",
       maxResults: 50,
       playlistId,
       fields: "pageInfo,nextPageToken,items/snippet(publishedAt,title," +
