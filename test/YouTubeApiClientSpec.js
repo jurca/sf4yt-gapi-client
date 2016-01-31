@@ -50,4 +50,40 @@ fdescribe("YouTubeApiClient", () => {
     })
   })
 
+  promiseIt("should be able to retrieve subscriptions", () => {
+    return client.getSubscribedChannels(ACCOUNT_ID).then((subscriptions) => {
+      expect(subscriptions instanceof Array).toBeTruthy()
+      expect(subscriptions.length).toBeGreaterThan(0)
+
+      for (let subscription of subscriptions) {
+        expect(subscription instanceof Object).toBeTruthy()
+        expect(typeof subscription.id).toBe("string")
+        expect(typeof subscription.title).toBe("string")
+        expect(subscription.videoCount).toBeGreaterThan(-1)
+        expect(subscription.thumbnails instanceof Object).toBeTruthy()
+        expect(Object.keys(subscription.thumbnails).length).toBeGreaterThan(0)
+      }
+
+      return client.getSubscribedChannels()
+    }).then(() => {
+      fail("The request should have been rejected with authorization error")
+    }).catch((error) => {
+      expect(error.name).toBe("GoogleApiError")
+      expect(error.xhr instanceof XMLHttpRequest).toBeTruthy()
+      expect(error.xhr.status).toBeGreaterThan(400)
+    })
+  })
+
+  promiseIt("should fetch the uploads playlist id for a channel", () => {
+    let channelId = "UC9-y-6csu5WGm29I7JiwpnA"
+    return client.getUploadsPlaylistId(channelId).then((uploadsPlaylistId) => {
+      expect(uploadsPlaylistId).toBeTruthy()
+      expect(typeof uploadsPlaylistId).toBe("string")
+
+      return client.getUploadsPlaylistId("abcdefgjkl").then((id) => {
+        expect(id).toBeNull()
+      })
+    })
+  })
+
 })

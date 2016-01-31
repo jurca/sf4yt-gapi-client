@@ -219,7 +219,7 @@ export default class YouTubeApiClient {
       id: channelId,
       fields: "items/contentDetails/relatedPlaylists/uploads"
     }).then((response) => {
-      if (response.items.length) {
+      if (!response.items.length) {
         return null
       }
 
