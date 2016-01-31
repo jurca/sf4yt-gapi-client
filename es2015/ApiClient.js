@@ -177,9 +177,11 @@ export default class ApiClient {
    */
   [PRIVATE.prepareAndSendRequest](method, path, data, authorized) {
     if (authorized) {
-      return this[PRIVATE.tokenProvider].generate().then(startRequest)
+      return this[PRIVATE.tokenProvider].generate().then(
+        startRequest.bind(this)
+      )
     } else {
-      return startRequest(null)
+      return startRequest.call(this, null)
     }
 
     function startRequest(token) {
@@ -195,7 +197,7 @@ export default class ApiClient {
         querySeparator = QUERY_PARAMETERS_SEPARATOR
       }
 
-      if (method === "GET") {
+      if (["GET", "DELETE"].indexOf(method) > -1) {
         url += querySeparator + this[PRIVATE.encodeQueryData](data)
       }
       xhr.open(method, url)
@@ -204,11 +206,14 @@ export default class ApiClient {
       if (authorized) {
         xhr.setRequestHeader("Authorization", `Bearer ${token}`)
       }
-      if (method !== "GET") {
+      if (["GET", "DELETE"].indexOf(method) === -1) {
         xhr.setRequestHeader("Content-Type", "application/json")
       }
 
-      return this[PRIVATE.sendRequest](xhr, (method !== "GET") ? data : null)
+      return this[PRIVATE.sendRequest](
+        xhr,
+        (["GET", "DELETE"].indexOf(method) === -1) ? data : null
+      )
     }
   }
 
