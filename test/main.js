@@ -14,6 +14,7 @@ require.config({
   baseUrl: "/base",
 
   paths: {
+    "moment": "node_modules/moment"
   },
 
   // dynamically load all test files
