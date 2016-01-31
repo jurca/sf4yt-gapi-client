@@ -543,7 +543,7 @@ export default class YouTubeApiClient {
       authorized = false) {
     let items = []
 
-    return fetchNextPage()
+    return fetchNextPage.call(this)
 
     function fetchNextPage(pageToken) {
       let fetchParams = Object.assign({}, parameters)
@@ -561,7 +561,7 @@ export default class YouTubeApiClient {
         }
 
         if (response.nextPageToken && continuationPredicate(response.items)) {
-          return fetchNextPage(response.nextPageToken)
+          return fetchNextPage.call(this, response.nextPageToken)
         } else {
           return items
         }
