@@ -389,11 +389,13 @@ export default class YouTubeApiClient {
       part: "snippet",
       id: playlistIds.join(","),
       fields: "items(id,snippet/thumbnails)"
-    }, () => true, authorized).then((playlist) => {
-      return {
-        id: playlist.id,
-        thumbnails: playlist.snippet.thumbnails
-      }
+    }, () => true, authorized).then((playlists) => {
+      return playlists.map((playlist) => {
+        return {
+          id: playlist.id,
+          thumbnails: playlist.snippet.thumbnails
+        }
+      })
     })
   }
 
