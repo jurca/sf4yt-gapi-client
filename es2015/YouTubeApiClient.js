@@ -415,38 +415,45 @@ export default class YouTubeApiClient {
    * - {@code maxres}
    *
    * @param {string} playlistId Playlist ID.
-   * @param {function(Object[]): boolean} continuationPredicate A callback
-   *        executed after each call to the REST API. The callback will receive
-   *        the items fetched in the last REST API call and should return
-   *        either {@code true} if the method should fetch the next page, or
-   *        {@code false} if no additional pages need to be fetched.
+   * @param {function({id: string, title: string, description: string, publishedAt: Date, channelId: string, thumbnails: Object<string, {url: string, width: number, height: number}>}[]): boolean} continuationPredicate
+   *        A callback executed after each call to the REST API. The callback
+   *        will receive the video fetched in the last REST API call and should
+   *        return either {@code true} if the method should fetch the next
+   *        page, or {@code false} if no additional pages need to be fetched.
    * @param {boolean=} authorized Flag signalling whether the request should be
    *        authorized by the user. This is required for the user's watch
    *        history and watch later playlist.
-   * @return {Promise<{id: number, title: string, description: string, publishedAt: Date, channelId: string, thumbnails: Object<string, {url: string, width: number, height: number}>}[]>}
+   * @return {Promise<{id: string, title: string, description: string, publishedAt: Date, channelId: string, thumbnails: Object<string, {url: string, width: number, height: number}>}[]>}
    *         A promise that will resolve to array of objects, each representing
    *         a single video.
    */
   getPlaylistVideos(playlistId, continuationPredicate = () => true,
       authorized = false) {
-    return this[PRIVATE.listAll]("playlistItems", {
-      part: "snippet",
-      maxResults: 50,
-      playlistId,
-      fields: "pageInfo,nextPageToken,items/snippet(publishedAt,title," +
-          "description,channelId,thumbnails,resourceId/videoId)"
-    }, continuationPredicate, authorized).then((items) => {
-      return items.map((item) => {
-        return {
-          id: item.resourceId.videoId,
-          title: item.snippet.title,
-          description: item.snippet.description,
-          publishedAt: new Date(item.snippet.publishedAt),
-          channelId: item.snippet.channelId,
-          thumbnails: item.snippet.thumbnails
-        }
-      })
+    return this[PRIVATE.listAll](
+      "playlistItems",
+      {
+        part: "snippet",
+        maxResults: 50,
+        playlistId,
+        fields: "pageInfo,nextPageToken,items/snippet(publishedAt,title," +
+            "description,channelId,thumbnails,resourceId/videoId)"
+      },
+      items => continuationPredicate(items.map(itemToVideo)),
+      authorized
+    ).then((items) => {
+      return items.map(itemToVideo)
     })
+
+    function itemToVideo(item) {
+      return {
+        id: item.snippet.resourceId.videoId,
+        title: item.snippet.title,
+        description: item.snippet.description,
+        publishedAt: new Date(item.snippet.publishedAt),
+        channelId: item.snippet.channelId,
+        thumbnails: item.snippet.thumbnails
+      }
+    }
   }
 
   /**
