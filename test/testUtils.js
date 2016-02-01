@@ -10,6 +10,15 @@ export function promiseIt(behavior, test) {
   })
 }
 
+export function fpromiseIt(behavior, test) {
+  fit(behavior, (done) => {
+    test().then(done).catch((error) => {
+      fail(error)
+      done()
+    })
+  })
+}
+
 // I really wonder how Google expects me to keep safe a *browser* API key when
 // it has to be used *in* the browser
 export let KEY = eval(atob(
