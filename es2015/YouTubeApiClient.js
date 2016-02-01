@@ -478,7 +478,7 @@ export default class YouTubeApiClient {
       return {
         id: video.id,
         duration: moment.duration(video.contentDetails.duration).asSeconds(),
-        viewCount: video.statistics.viewCount
+        viewCount: parseInt(video.statistics.viewCount, 10)
       }
     })
   }
@@ -496,12 +496,12 @@ export default class YouTubeApiClient {
       part: "contentDetails,statistics",
       id: videoIds.join(","),
       fields: "items(id,contentDetails/duration,statistics/viewCount)"
-    }).then((response) => {
-      return response.items.map((video) => {
+    }).then((items) => {
+      return items.map((video) => {
         return {
           id: video.id,
           duration: moment.duration(video.contentDetails.duration).asSeconds(),
-          viewCount: video.statistics.viewCount
+          viewCount: parseInt(video.statistics.viewCount, 10)
         }
       })
     })
