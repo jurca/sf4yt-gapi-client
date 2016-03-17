@@ -8,16 +8,13 @@ module.exports = function (config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ["jasmine", "requirejs"],
+    frameworks: ["browserify", "jasmine"],
 
 
     // list of files / patterns to load in the browser
     files: [
-      {pattern: "node_modules/moment/src/**/*.js", included: false},
-      {pattern: "es2015/**/*.js", included: false},
-      {pattern: "test/testUtils.js", included: false},
-      {pattern: "test/**/*Spec.js", included: false},
-      "test/main.js"
+      "test/testUtils.js",
+      "test/**/*Spec.js"
     ],
 
 
@@ -30,18 +27,13 @@ module.exports = function (config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      "node_modules/moment/src/**/*.js": ["babel"],
-      "es2015/**/*.js": ["babel"],
-      "test/testUtils.js": ["babel"],
-      "test/**/*Spec.js": ["babel"]
+      "test/**/*.js": ["browserify"]
     },
 
 
-    babelPreprocessor: {
-      options: {
-        presets: ["es2015"],
-        plugins: ["transform-es2015-modules-amd"]
-      }
+    browserify: {
+      debug: true,
+      transform: ["babelify"]
     },
 
 
