@@ -209,6 +209,10 @@ export default class ApiClient {
       if (["GET", "DELETE"].indexOf(method) === -1) {
         xhr.setRequestHeader("Content-Type", "application/json")
       }
+      if ((typeof chrome !== "undefined") && chrome.runtime) {
+        let extensionId = chrome.runtime.id
+        xhr.setRequestHeader("Chrome-Extension-ID", extensionId)
+      }
 
       return this[PRIVATE.sendRequest](
         xhr,
